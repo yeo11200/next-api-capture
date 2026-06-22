@@ -1,0 +1,19 @@
+{
+  "name": "next-api-capture",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Capture server (SSR/RSC) + client API calls in Next.js App Router apps and inspect them in a Chrome DevTools panel.",
+  "packageManager": "pnpm@10.33.2",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "typecheck": "turbo run typecheck",
+    "playground": "pnpm --filter @next-api-capture/playground dev",
+    "e2e": "bash tests/e2e/run.sh"
+  },
+  "devDependencies": {
+    "playwright": "^1.60.0",
+    "turbo": "^2.5.0",
+    "typescript": "^5.6.3"
+  }
+}

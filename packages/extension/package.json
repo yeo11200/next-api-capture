@@ -1,0 +1,9 @@
+{
+  "name": "@next-api-capture/extension",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MV3 Chrome extension — DevTools panel for Next API Capture.",
+  "scripts": {
+    "build": "node -e \"console.log('extension: no build step — load unpacked from packages/extension/')\""
+  }
+}

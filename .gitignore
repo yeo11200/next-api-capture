@@ -1,0 +1,20 @@
+node_modules
+dist
+.next
+.turbo
+out
+*.log
+*.tsbuildinfo
+.DS_Store
+
+# Local tooling / editor config (may contain machine-specific or private paths)
+.claude/
+.vscode/
+.idea/
+
+# Secrets / environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key

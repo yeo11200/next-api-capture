@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      :root {
+        --bg: #1e1e1e;
+        --panel: #252526;
+        --border: #3c3c3c;
+        --text: #d4d4d4;
+        --muted: #858585;
+        --server: #4ec9b0;
+        --client: #569cd6;
+        --err: #f48771;
+        --accent: #0e639c;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font: 12px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", monospace;
+        background: var(--bg);
+        color: var(--text);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
+      }
+      header .title { font-weight: 600; }
+      header .spacer { flex: 1; }
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--err); display: inline-block; }
+      .dot.on { background: var(--server); }
+      button, select {
+        background: #333;
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 3px 8px;
+        cursor: pointer;
+        font-size: 11px;
+      }
+      button:hover { background: #3c3c3c; }
+      .inp { background: #333; color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 3px 6px; font-size: 11px; }
+      .main { flex: 1; display: flex; min-height: 0; }
+      .list { flex: 1; overflow: auto; }
+      .detail {
+        width: 42%;
+        border-left: 1px solid var(--border);
+        overflow: auto;
+        padding: 8px 10px;
+        display: none;
+        background: var(--panel);
+      }
+      .detail.show { display: block; }
+      .nav-group { border-bottom: 1px solid var(--border); }
+      .nav-head {
+        padding: 4px 10px;
+        background: #2d2d2d;
+        color: var(--muted);
+        position: sticky;
+        top: 0;
+        font-size: 11px;
+      }
+      .nav-head .route { color: var(--text); font-weight: 600; }
+      table { width: 100%; border-collapse: collapse; }
+      tr.call { cursor: pointer; }
+      tr.call:hover { background: #2a2d2e; }
+      tr.call.sel { background: #094771; }
+      td { padding: 3px 8px; vertical-align: top; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      td.url { white-space: normal; word-break: break-all; max-width: 0; width: 100%; }
+      .badge { padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+      .badge.server { background: rgba(78,201,176,0.18); color: var(--server); }
+      .badge.client { background: rgba(86,156,214,0.18); color: var(--client); }
+      .status-2 { color: var(--server); }
+      .status-3 { color: #dcdcaa; }
+      .status-4, .status-5, .status-0 { color: var(--err); }
+      .empty { padding: 24px; text-align: center; color: var(--muted); }
+      pre {
+        white-space: pre-wrap;       /* keep JSON indentation, wrap only when needed */
+        overflow-wrap: anywhere;     /* break long URLs/tokens instead of breaking every word */
+        background: #1e1e1e;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 8px;
+        margin: 4px 0 0;
+        max-height: 60vh;            /* huge bodies get their own scroll box */
+        overflow: auto;
+        tab-size: 2;
+      }
+      h4 { margin: 12px 0 4px; color: var(--muted); font-size: 11px; text-transform: uppercase; }
+      .kv { color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="title">Next API Capture</span>
+      <span id="dot" class="dot" title="dev WebSocket"></span>
+      <span id="conn" class="kv">disconnected</span>
+      <span class="spacer"></span>
+      <label class="kv">filter
+        <select id="filter">
+          <option value="all">all</option>
+          <option value="server">server</option>
+          <option value="client">client</option>
+          <option value="server:rsc">rsc</option>
+          <option value="server:route-handler">route-handler</option>
+          <option value="server:action">action</option>
+        </select>
+      </label>
+      <input id="search" class="inp" type="text" size="14" placeholder="search url/source" />
+      <label class="kv"><input type="checkbox" id="clearnav" /> clear on nav</label>
+      <span id="count" class="kv">0</span>
+      <input id="port" class="inp" type="text" inputmode="numeric" size="5" title="dev WS port" />
+      <input id="token" class="inp" type="text" size="8" placeholder="token" title="dev token (optional)" />
+      <button id="connect">connect</button>
+      <button id="clear">clear</button>
+    </header>
+    <div class="main">
+      <div id="list" class="list"></div>
+      <div id="detail" class="detail"></div>
+    </div>
+    <script src="panel.js"></script>
+  </body>
+</html>
