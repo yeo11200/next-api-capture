@@ -20,6 +20,8 @@ const $port = document.getElementById("port");
 const $token = document.getElementById("token");
 const $search = document.getElementById("search");
 const $clearnav = document.getElementById("clearnav");
+const $resizer = document.getElementById("resizer");
+const $main = document.querySelector(".main");
 
 document.getElementById("clear").addEventListener("click", () => port.postMessage({ type: "clear" }));
 document.getElementById("connect").addEventListener("click", () =>
@@ -145,7 +147,9 @@ function render() {
         '">' +
         (c.error ? "ERR" : (c.response && c.response.status) || "-") +
         "</td>" +
-        '<td class="url">' +
+        '<td class="url" title="' +
+        esc(c.url) +
+        '">' +
         esc(shortUrl(c.url)) +
         "</td>" +
         '<td class="kv">' +
@@ -170,9 +174,11 @@ function render() {
 function renderDetail(call) {
   if (!call) {
     $detail.classList.remove("show");
+    $resizer.classList.remove("show");
     return;
   }
   $detail.classList.add("show");
+  $resizer.classList.add("show");
   $detail.innerHTML =
     "<h4>General</h4>" +
     kv("Source", call.source) +
@@ -252,5 +258,31 @@ function esc(s) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
+
+// ── Resizable split: drag the handle to re-size the detail pane (the list flexes
+//    to fill the rest). Listeners live on window so the drag survives the cursor
+//    leaving the thin handle; userSelect is suspended so text isn't selected mid-drag.
+let dragging = false;
+$resizer.addEventListener("mousedown", (e) => {
+  if (!$detail.classList.contains("show")) return; // nothing to resize against
+  dragging = true;
+  $resizer.classList.add("dragging");
+  document.body.style.userSelect = "none";
+  e.preventDefault();
+});
+window.addEventListener("mousemove", (e) => {
+  if (!dragging) return;
+  const rect = $main.getBoundingClientRect();
+  const MIN = 220; // keep both panes usable
+  let w = rect.right - e.clientX; // detail width = distance from cursor to right edge
+  w = Math.max(MIN, Math.min(rect.width - MIN, w));
+  $detail.style.width = w + "px";
+});
+window.addEventListener("mouseup", () => {
+  if (!dragging) return;
+  dragging = false;
+  $resizer.classList.remove("dragging");
+  document.body.style.userSelect = "";
+});
 
 render();

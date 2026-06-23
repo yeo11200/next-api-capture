@@ -58,6 +58,18 @@
         background: var(--panel);
       }
       .detail.show { display: block; }
+      /* Drag handle between the list and the detail pane. Sits in the flex row only
+         while the detail is open; dragging it re-sizes .detail (the list flexes to fit). */
+      .resizer {
+        flex: 0 0 6px;
+        margin-left: -3px;          /* straddle the detail's border so the grab area hugs the line */
+        cursor: col-resize;
+        background: transparent;
+        display: none;
+        z-index: 1;
+      }
+      .resizer.show { display: block; }
+      .resizer:hover, .resizer.dragging { background: var(--accent); }
       .nav-group { border-bottom: 1px solid var(--border); }
       .nav-head {
         padding: 4px 10px;
@@ -73,7 +85,10 @@
       tr.call:hover { background: #2a2d2e; }
       tr.call.sel { background: #094771; }
       td { padding: 3px 8px; vertical-align: top; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      td.url { white-space: normal; word-break: break-all; max-width: 0; width: 100%; }
+      /* URL fills the remaining width and truncates with an ellipsis on one line
+         (no ugly mid-word wrapping when the list is narrow). Full URL: hover title
+         + the detail pane. */
+      td.url { max-width: 0; width: 100%; }
       .badge { padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
       .badge.server { background: rgba(78,201,176,0.18); color: var(--server); }
       .badge.client { background: rgba(86,156,214,0.18); color: var(--client); }
@@ -123,6 +138,7 @@
     </header>
     <div class="main">
       <div id="list" class="list"></div>
+      <div id="resizer" class="resizer" title="drag to resize"></div>
       <div id="detail" class="detail"></div>
     </div>
     <script src="panel.js"></script>
