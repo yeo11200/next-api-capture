@@ -1,5 +1,5 @@
 {
-  "name": "@next-api-capture/library",
+  "name": "@shinjinseop/library",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -40,7 +40,7 @@
     "react": { "optional": true }
   },
   "devDependencies": {
-    "@next-api-capture/shared": "workspace:*",
+    "@shinjinseop/shared": "workspace:*",
     "@types/node": "^20.16.11",
     "@types/react": "^19.0.2",
     "@types/ws": "^8.5.12",

@@ -1,4 +1,4 @@
-import type { CaptureCall, TransportEnvelope } from "@next-api-capture/shared";
+import type { CaptureCall, TransportEnvelope } from "@shinjinseop/shared";
 import { getTransport } from "./transport/ws-server";
 
 interface Buffered {

@@ -1,5 +1,5 @@
 {
-  "name": "@next-api-capture/playground",
+  "name": "@shinjinseop/playground",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@next-api-capture/library": "workspace:*",
+    "@shinjinseop/library": "workspace:*",
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

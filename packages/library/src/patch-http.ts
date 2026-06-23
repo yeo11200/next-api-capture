@@ -2,7 +2,7 @@ import type {
   CaptureSource,
   RequestKind,
   ResolvedCaptureConfig,
-} from "@next-api-capture/shared";
+} from "@shinjinseop/shared";
 import { currentRequestInfo } from "./context";
 import { recordCall } from "./store";
 import { redactBody, redactHeaders } from "./redact";

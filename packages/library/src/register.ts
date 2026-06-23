@@ -1,4 +1,4 @@
-import type { CaptureConfig } from "@next-api-capture/shared";
+import type { CaptureConfig } from "@shinjinseop/shared";
 import { resolveConfig } from "./config";
 import { patchFetch } from "./patch-fetch";
 import { patchHttp } from "./patch-http";

@@ -15,7 +15,7 @@ export default defineConfig({
     options.jsx = "automatic";
   },
   // Bundle the shared contract so consumers only need `next` (+ optional `ws`/`react`).
-  noExternal: [/@next-api-capture\/shared/],
+  noExternal: [/@shinjinseop\/shared/],
   // Peers / dynamic-only deps stay external.
   external: ["next", "ws", "react", "react/jsx-runtime", "react/jsx-dev-runtime"],
 });

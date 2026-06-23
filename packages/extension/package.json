@@ -1,5 +1,5 @@
 {
-  "name": "@next-api-capture/extension",
+  "name": "@shinjinseop/extension",
   "version": "0.1.0",
   "private": true,
   "description": "MV3 Chrome extension — DevTools panel for Next API Capture.",

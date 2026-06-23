@@ -1,4 +1,4 @@
-import type { TransportEnvelope } from "@next-api-capture/shared";
+import type { TransportEnvelope } from "@shinjinseop/shared";
 
 export interface Transport {
   send(env: TransportEnvelope): void;

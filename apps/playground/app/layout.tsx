@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CaptureInjectScript } from "@next-api-capture/library/inject";
+import { CaptureInjectScript } from "@shinjinseop/library/inject";
 
 export const metadata = {
   title: "Next API Capture — Playground",

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { NAV_COOKIE, NAV_HEADER, NAV_KIND_HEADER, type RequestKind } from "@next-api-capture/shared";
+import { NAV_COOKIE, NAV_HEADER, NAV_KIND_HEADER, type RequestKind } from "@shinjinseop/shared";
 
 export interface CaptureMiddlewareOptions {
   /** Cookie name exposing the nav id to client-side code. Default: "nac-nav". */

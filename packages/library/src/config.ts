@@ -2,7 +2,7 @@ import {
   DEFAULT_WS_PORT,
   type CaptureConfig,
   type ResolvedCaptureConfig,
-} from "@next-api-capture/shared";
+} from "@shinjinseop/shared";
 
 /** Header names whose values are always masked, even if allowlisted. */
 const DEFAULT_BLOCKLIST = [

@@ -1,5 +1,5 @@
 {
-  "name": "@next-api-capture/shared",
+  "name": "@shinjinseop/shared",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",

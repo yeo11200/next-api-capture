@@ -1,4 +1,4 @@
-import { NAV_HEADER, NAV_KIND_HEADER, type RequestKind } from "@next-api-capture/shared";
+import { NAV_HEADER, NAV_KIND_HEADER, type RequestKind } from "@shinjinseop/shared";
 
 let headersFn: (() => unknown) | null | undefined;
 

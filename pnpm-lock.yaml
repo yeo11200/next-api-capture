@@ -20,7 +20,7 @@ importers:
 
   apps/playground:
     dependencies:
-      '@next-api-capture/library':
+      '@shinjinseop/library':
         specifier: workspace:*
         version: link:../../packages/library
       next:
@@ -50,13 +50,13 @@ importers:
 
   packages/library:
     dependencies:
-      '@next-api-capture/shared':
-        specifier: workspace:*
-        version: link:../shared
       ws:
         specifier: ^8.18.0
         version: 8.21.0
     devDependencies:
+      '@shinjinseop/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@types/node':
         specifier: ^20.16.11
         version: 20.19.41

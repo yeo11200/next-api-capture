@@ -44,7 +44,7 @@ trap teardown EXIT
 teardown
 
 echo "[e2e] building library…"
-if ! pnpm -C "$HERE" exec turbo run build --filter=@next-api-capture/library; then
+if ! pnpm -C "$HERE" exec turbo run build --filter=@shinjinseop/library; then
   echo "[e2e] library build failed — aborting" >&2
   exit 1
 fi

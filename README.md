@@ -38,7 +38,7 @@ next-api-capture/
 ```bash
 pnpm install
 pnpm build                       # builds shared + library
-pnpm --filter @next-api-capture/playground dev
+pnpm --filter @shinjinseop/playground dev
 ```
 
 Then in Chrome: `chrome://extensions` → enable Developer mode → **Load unpacked** →
@@ -49,7 +49,7 @@ select `packages/extension/`. Open DevTools on `http://localhost:3000`, pick the
 
 ```ts
 // 1) instrumentation.ts
-import { registerCapture } from "@next-api-capture/library";
+import { registerCapture } from "@shinjinseop/library";
 export async function register() {
   // mode defaults to "dev" in development and "off" in production — do NOT
   // hardcode `mode: "dev"` here or you defeat the prod-safe default.
@@ -59,7 +59,7 @@ export async function register() {
 
 ```ts
 // 2) middleware.ts — app has NO middleware of its own
-import { createCaptureMiddleware } from "@next-api-capture/library/middleware";
+import { createCaptureMiddleware } from "@shinjinseop/library/middleware";
 export const middleware = createCaptureMiddleware();
 export const config = { matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"] };
 ```
@@ -69,7 +69,7 @@ export const config = { matcher: ["/((?!_next/static|_next/image|favicon.ico).*)
 // Keep your existing body verbatim and wrap it; the wrapper normalizes every
 // return shape (continue / redirect / rewrite / custom) and forwards the nav
 // headers to the render, preserving your response's cookies + headers.
-import { composeCaptureMiddleware } from "@next-api-capture/library/middleware";
+import { composeCaptureMiddleware } from "@shinjinseop/library/middleware";
 import { type NextRequest } from "next/server";
 
 async function appMiddleware(req: NextRequest) {
@@ -111,7 +111,7 @@ ring buffer, read on demand from an authenticated route handler:
 ```ts
 // app/nac/route.ts  — NOTE: do NOT use a "_"-prefixed folder; Next treats
 // `_folder` as private (non-routable). A plain segment like `nac` works.
-import { createCaptureRouteHandler } from "@next-api-capture/library";
+import { createCaptureRouteHandler } from "@shinjinseop/library";
 const handler = createCaptureRouteHandler({ token: process.env.NAC_PROD_TOKEN });
 export const GET = handler.GET; // named export — Next does NOT detect `export const { GET }`
 export const dynamic = "force-dynamic";
@@ -132,7 +132,7 @@ When the dev WebSocket is unavailable (port blocked, firewall, SW asleep), mount
 inject component at the end of your root layout `<body>`:
 
 ```tsx
-import { CaptureInjectScript } from "@next-api-capture/library/inject";
+import { CaptureInjectScript } from "@shinjinseop/library/inject";
 // …<body>{children}<CaptureInjectScript /></body>
 ```
 

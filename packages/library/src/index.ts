@@ -14,8 +14,8 @@ export {
   type CaptureNavigation,
   type RedactionConfig,
   type TransportEnvelope,
-} from "@next-api-capture/shared";
+} from "@shinjinseop/shared";
 
 // NOTE: `createCaptureMiddleware` is intentionally NOT re-exported here.
-// Import it from "@next-api-capture/library/middleware" so `next/server`
+// Import it from "@shinjinseop/library/middleware" so `next/server`
 // (an Edge module) never gets pulled into the Node instrumentation bundle.

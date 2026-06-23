@@ -1,4 +1,4 @@
-import { createCaptureRouteHandler } from "@next-api-capture/library";
+import { createCaptureRouteHandler } from "@shinjinseop/library";
 
 // Prod debug endpoint (transport c). Requires Authorization: Bearer <NAC_PROD_TOKEN>.
 //   curl -H "Authorization: Bearer $NAC_PROD_TOKEN" 'http://localhost:3000/nac?since=0'

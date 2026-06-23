@@ -1,4 +1,4 @@
-import type { ResolvedCaptureConfig } from "@next-api-capture/shared";
+import type { ResolvedCaptureConfig } from "@shinjinseop/shared";
 
 type Redaction = ResolvedCaptureConfig["redaction"];
 

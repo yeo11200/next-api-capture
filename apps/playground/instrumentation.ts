@@ -1,4 +1,4 @@
-import { registerCapture } from "@next-api-capture/library";
+import { registerCapture } from "@shinjinseop/library";
 
 /**
  * Next calls this once per server runtime at startup.
