@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 
 const REPO = "https://github.com/yeo11200/next-api-capture";
+const NPM = "https://www.npmjs.com/package/@shinjinseop/next-api-capture";
+const PKG = "@shinjinseop/next-api-capture";
 
 // Promo / landing page for the library. The other routes are live demo scenarios —
 // this page pitches the value and indexes them.
@@ -20,7 +22,8 @@ export default function Home() {
         </p>
         <div style={ctaRow}>
           <a href="/server-fetch" style={ctaPrimary}>See a live capture →</a>
-          <a href={REPO} style={ctaGhost} target="_blank" rel="noreferrer">View on GitHub</a>
+          <a href={NPM} style={ctaGhost} target="_blank" rel="noreferrer">npm</a>
+          <a href={REPO} style={ctaGhost} target="_blank" rel="noreferrer">GitHub</a>
         </div>
 
         {/* Mini mock of the panel — show, don't tell */}
@@ -50,9 +53,23 @@ export default function Home() {
       <div style={steps}>
         <Step
           n={1}
+          title="Install the library"
+          file="terminal"
+          code={`npm i ${PKG}
+# or:  pnpm add ${PKG}   /   yarn add ${PKG}
+# peer dependency: next >= 13.4`}
+          desc={
+            <>
+              On npm:{" "}
+              <a href={NPM} target="_blank" rel="noreferrer">{PKG}</a>
+            </>
+          }
+        />
+        <Step
+          n={2}
           title="Instrument the server"
           file="instrumentation.ts"
-          code={`import { registerCapture } from "@shinjinseop/next-api-capture";
+          code={`import { registerCapture } from "${PKG}";
 
 export async function register() {
   // dev by default; never auto-on in production
@@ -60,28 +77,41 @@ export async function register() {
 }`}
         />
         <Step
-          n={2}
+          n={3}
           title="Add the middleware"
           file="middleware.ts"
-          code={`import { createCaptureMiddleware } from "@shinjinseop/next-api-capture/middleware";
+          code={`import { createCaptureMiddleware } from "${PKG}/middleware";
 
 export const middleware = createCaptureMiddleware();`}
         />
         <Step
-          n={3}
+          n={4}
           title="Keep the ws package server-only"
           file="next.config.js"
           code={`module.exports = { serverExternalPackages: ["ws"] };`}
         />
         <Step
-          n={4}
-          title="Load the extension"
+          n={5}
+          title="Get the DevTools extension"
           desc={
             <>
-              In <code>chrome://extensions</code> enable Developer mode →{" "}
-              <strong>Load unpacked</strong> → <code>packages/extension/</code>. Open
-              DevTools and pick the <strong>“API Capture”</strong> panel — then browse
-              your app.
+              The Chrome extension is <strong>pending Web Store review</strong>. Until it&apos;s
+              listed, load it unpacked: clone{" "}
+              <a href={REPO} target="_blank" rel="noreferrer">the repo</a>, open{" "}
+              <code>chrome://extensions</code>, turn on <strong>Developer mode</strong>, click{" "}
+              <strong>Load unpacked</strong>, and pick the <code>packages/extension/</code>{" "}
+              folder (the one with <code>manifest.json</code>).
+            </>
+          }
+        />
+        <Step
+          n={6}
+          title="Open the panel"
+          desc={
+            <>
+              Run your app on <code>localhost</code>, open DevTools, choose the{" "}
+              <strong>“API Capture”</strong> panel, and browse — server and client calls
+              stream in, grouped per navigation.
             </>
           }
         />
@@ -104,6 +134,23 @@ export const middleware = createCaptureMiddleware();`}
           <a href="/actions" style={link}>/actions</a>{" "}
           <span style={tag("#c586c0")}>server:action</span>
           <div style={liDesc}>A real Server Action — its server-side fetch is classified and captured as an action call.</div>
+        </li>
+      </ul>
+
+      {/* Links — so a visitor can install straight from here */}
+      <h2 style={h2}>Links</h2>
+      <ul style={list}>
+        <li style={li}>
+          <a href={NPM} style={link} target="_blank" rel="noreferrer">npm — {PKG}</a>
+          <div style={liDesc}>Install the server library: <code>npm i {PKG}</code></div>
+        </li>
+        <li style={li}>
+          <a href={REPO} style={link} target="_blank" rel="noreferrer">GitHub — yeo11200/next-api-capture</a>
+          <div style={liDesc}>Source, the DevTools extension (load unpacked from <code>packages/extension/</code>), and this playground.</div>
+        </li>
+        <li style={li}>
+          <span style={link}>Chrome Web Store</span> <span style={tag("#dcdcaa")}>in review</span>
+          <div style={liDesc}>The extension is pending review — load it unpacked from the repo meanwhile (step 5 above).</div>
         </li>
       </ul>
 
