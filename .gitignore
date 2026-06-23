@@ -18,3 +18,6 @@ out
 !.env.example
 *.pem
 *.key
+
+# Packaged build artifacts (e.g. Chrome Web Store upload zip) — regenerated, not tracked
+*.zip
