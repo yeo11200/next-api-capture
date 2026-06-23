@@ -5,7 +5,7 @@ import type {
 } from "@next-api-capture/shared";
 import { currentRequestInfo } from "./context";
 import { recordCall } from "./store";
-import { redactHeaders } from "./redact";
+import { redactBody, redactHeaders } from "./redact";
 
 let patched = false;
 
@@ -26,9 +26,11 @@ let patched = false;
  *    analysis — so no "Can't resolve 'http'" in the Edge/instrumentation bundle, and no
  *    `node:` prefix stripping. Caller still gates on isNode && !isEdge.
  *  - Always delegates to the original first — capture must never alter/block a request.
- *  - v1 captures METADATA only (method/url/headers/status/timing). The response body is
- *    a single stream; reading it risks starving the real consumer, so body capture is
- *    deferred (see TODO) rather than done unsafely.
+ *  - Response body capture (dev default ON) OBSERVES the stream without consuming it: a
+ *    readable stream is an EventEmitter, so an extra 'data' listener receives a COPY of
+ *    each chunk and never starves the real consumer. gzip/deflate/br bodies are decoded
+ *    via node:zlib (the http layer hands us the raw, still-compressed bytes). Bodies are
+ *    size-capped + pattern-masked by the same redaction config as the fetch path.
  */
 export function patchHttp(config: ResolvedCaptureConfig): void {
   if (patched) return;
@@ -107,6 +109,8 @@ function wrap(
 
 interface NodeClientRequest {
   on(event: string, listener: (...a: unknown[]) => void): unknown;
+  write?: (...args: unknown[]) => unknown;
+  end?: (...args: unknown[]) => unknown;
 }
 
 interface NodeResponse {
@@ -126,22 +130,74 @@ function instrument(
   const meta = describeRequest(scheme, args);
   let recorded = false;
 
+  // Capture the OUTGOING request body (POST/PUT/DELETE/PATCH payloads) by observing
+  // write()/end() — that is where the consumer pushes the body. Mirrors the response
+  // rules: only string/Buffer chunks copied, every call delegates and keeps its return.
+  const readRequestBody = config.redaction.captureRequestBody
+    ? hookRequestBody(req, config)
+    : () => undefined;
+
   const finish = (
     status: number,
     resHeaders: NodeResponse["headers"],
     error?: string,
+    bodyInfo?: { body: string; bodyTruncated: boolean },
   ) => {
     if (recorded) return;
     recorded = true;
-    void record(start, status, resHeaders, error, meta, config, sample);
+    void record(start, status, resHeaders, error, meta, config, sample, bodyInfo, readRequestBody());
   };
 
   req.on("response", (res) => {
     const response = res as NodeResponse;
     const status = response.statusCode ?? 0;
     const headers = response.headers;
-    // 'close' always fires (after 'end' on success, or on abort). Listening to it
-    // does NOT consume the body stream — only attaching a 'data' listener would.
+
+    if (!config.redaction.captureResponseBody) {
+      // Metadata only. 'close' always fires (after 'end' on success, or on abort) and —
+      // unlike attaching a 'data' listener — does NOT put the stream into flowing mode.
+      response.on("close", () => finish(status, headers));
+      return;
+    }
+
+    // Observe (NOT consume) the body. Every 'data' listener on a readable stream gets a
+    // COPY of each chunk, so our capped accumulation never removes bytes from the real
+    // consumer (axios/got/…). We attach here, inside the synchronous 'response' dispatch
+    // — before any chunk is emitted on a later tick — so the consumer, which attaches its
+    // own 'data' in the same dispatch, is never starved.
+    const chunks: Buffer[] = [];
+    let size = 0;
+    let rawTruncated = false;
+    const HARD_CAP = Math.max(config.redaction.maxBodyBytes, 1024 * 1024);
+    response.on("data", (chunk: unknown) => {
+      try {
+        if (rawTruncated) return;
+        const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk));
+        if (size + buf.length > HARD_CAP) {
+          const room = HARD_CAP - size;
+          if (room > 0) {
+            chunks.push(buf.subarray(0, room));
+            size += room;
+          }
+          rawTruncated = true;
+        } else {
+          chunks.push(buf);
+          size += buf.length;
+        }
+      } catch {
+        /* ignore a bad chunk — never break the consumer */
+      }
+    });
+    response.on("end", () => {
+      const decoded = decodeBody(chunks, headers?.["content-encoding"]);
+      if (decoded == null) {
+        finish(status, headers); // empty, or compressed bytes we couldn't decode → metadata only
+        return;
+      }
+      const { body, truncated } = redactBody(decoded, config.redaction);
+      finish(status, headers, undefined, { body, bodyTruncated: truncated || rawTruncated });
+    });
+    // Aborted/closed with no 'end' → still record the metadata.
     response.on("close", () => finish(status, headers));
   });
   req.on("error", (err) =>
@@ -157,6 +213,8 @@ async function record(
   meta: { method: string; url: string; headers: unknown },
   config: ResolvedCaptureConfig,
   sample: number,
+  bodyInfo?: { body: string; bodyTruncated: boolean },
+  reqBodyInfo?: { body: string; bodyTruncated: boolean },
 ): Promise<void> {
   let navId: string | undefined;
   let kind: RequestKind | undefined;
@@ -175,10 +233,12 @@ async function record(
     url: meta.url,
     request: {
       headers: redactHeaders(meta.headers as never, config.redaction),
+      ...(reqBodyInfo ? { body: reqBodyInfo.body, bodyTruncated: reqBodyInfo.bodyTruncated } : {}),
     },
     response: {
       status,
       headers: redactHeaders(resHeaders as never, config.redaction),
+      ...(bodyInfo ? { body: bodyInfo.body, bodyTruncated: bodyInfo.bodyTruncated } : {}),
     },
     timing: { start, duration: Date.now() - start },
     ...(error ? { error } : {}),
@@ -236,4 +296,131 @@ function describeRequest(
   }
 
   return { method, url, headers };
+}
+
+interface ZlibLike {
+  gunzipSync?: (b: Buffer) => Buffer;
+  brotliDecompressSync?: (b: Buffer) => Buffer;
+  inflateSync?: (b: Buffer) => Buffer;
+  inflateRawSync?: (b: Buffer) => Buffer;
+}
+
+/** Lazily resolve node:zlib via the bundler-invisible builtin loader (see patchHttp). */
+let zlibMod: ZlibLike | null | undefined;
+function getZlib(): ZlibLike | null {
+  if (zlibMod !== undefined) return zlibMod;
+  try {
+    const getBuiltin = (
+      process as { getBuiltinModule?: (id: string) => unknown }
+    ).getBuiltinModule;
+    const ns = typeof getBuiltin === "function" ? getBuiltin("node:zlib") : undefined;
+    zlibMod = ((ns as { default?: unknown })?.default ?? ns ?? null) as ZlibLike | null;
+  } catch {
+    zlibMod = null;
+  }
+  return zlibMod;
+}
+
+/**
+ * Concatenate captured chunks and decode to a string, transparently decompressing
+ * gzip / deflate / br. Node's http layer hands us the RAW (still-compressed) bytes —
+ * axios decompresses on its own AFTER us. Returns null when there is nothing to show or
+ * the bytes can't be decoded (e.g. an unknown encoding, or our capped copy cut a
+ * compressed stream short) — the caller then records metadata only instead of garbage.
+ */
+function decodeBody(
+  chunks: Buffer[],
+  contentEncoding: string | string[] | undefined,
+): string | null {
+  if (!chunks.length) return null;
+  const raw = Buffer.concat(chunks);
+  if (raw.length === 0) return null;
+  const enc = String(
+    Array.isArray(contentEncoding) ? contentEncoding[0] : contentEncoding ?? "",
+  ).toLowerCase();
+  const zlib = getZlib();
+  try {
+    if (enc.includes("br") && zlib?.brotliDecompressSync) {
+      return zlib.brotliDecompressSync(raw).toString("utf8");
+    }
+    if (enc.includes("gzip") && zlib?.gunzipSync) {
+      return zlib.gunzipSync(raw).toString("utf8");
+    }
+    if (enc.includes("deflate") && zlib?.inflateSync) {
+      try {
+        return zlib.inflateSync(raw).toString("utf8");
+      } catch {
+        return zlib.inflateRawSync ? zlib.inflateRawSync(raw).toString("utf8") : null;
+      }
+    }
+    if (enc && enc !== "identity") return null; // unknown compression — don't emit garbage
+  } catch {
+    return null; // decompression failed (truncated/corrupt) — skip body, keep metadata
+  }
+  return raw.toString("utf8");
+}
+
+/**
+ * Wrap a ClientRequest's write()/end() to copy the OUTGOING body (POST/PUT/DELETE/PATCH).
+ * Same safety contract as response capture: only string/Buffer chunks are copied, every
+ * call delegates to the original and returns its value (the backpressure boolean / the
+ * request), so the real request is byte-for-byte unchanged. Returns an accessor that
+ * decodes + redacts the accumulated body, or undefined when there is none / it looks
+ * binary (uploads). Request bodies are not decompressed — clients send them uncompressed.
+ */
+function hookRequestBody(
+  req: NodeClientRequest,
+  config: ResolvedCaptureConfig,
+): () => { body: string; bodyTruncated: boolean } | undefined {
+  const chunks: Buffer[] = [];
+  let size = 0;
+  let truncated = false;
+  const cap = config.redaction.maxBodyBytes;
+
+  const grab = (chunk: unknown): void => {
+    try {
+      if (truncated || chunk == null) return;
+      if (typeof chunk !== "string" && !Buffer.isBuffer(chunk)) return; // skip streams/objects
+      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      if (size + buf.length > cap) {
+        const room = cap - size;
+        if (room > 0) {
+          chunks.push(buf.subarray(0, room));
+          size += room;
+        }
+        truncated = true;
+      } else {
+        chunks.push(buf);
+        size += buf.length;
+      }
+    } catch {
+      /* ignore a bad chunk — never break the request */
+    }
+  };
+
+  const origWrite = typeof req.write === "function" ? req.write.bind(req) : undefined;
+  const origEnd = typeof req.end === "function" ? req.end.bind(req) : undefined;
+  if (origWrite) {
+    req.write = (...a: unknown[]) => {
+      grab(a[0]);
+      return origWrite(...a);
+    };
+  }
+  if (origEnd) {
+    req.end = (...a: unknown[]) => {
+      // end() may be called as end(cb) with no body — don't grab a callback.
+      if (typeof a[0] !== "function") grab(a[0]);
+      return origEnd(...a);
+    };
+  }
+
+  return () => {
+    if (!chunks.length) return undefined;
+    const raw = Buffer.concat(chunks);
+    if (raw.length === 0) return undefined;
+    const text = raw.toString("utf8");
+    if (text.includes("\u0000")) return undefined; // NUL byte → looks binary, skip
+    const r = redactBody(text, config.redaction);
+    return { body: r.body, bodyTruncated: r.truncated || truncated };
+  };
 }
