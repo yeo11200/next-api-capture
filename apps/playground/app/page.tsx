@@ -110,7 +110,7 @@ export const middleware = createCaptureMiddleware();`}
       <p style={footnote}>
         Dev transport runs on <code>ws://127.0.0.1:9477</code>. Load the extension
         (<code>Load unpacked → packages/extension/</code>), open DevTools, pick the{" "}
-        <strong>“API Capture”</strong> panel. MVP.
+        <strong>“API Capture”</strong> panel. MVP. · <a href="/privacy">Privacy</a>
       </p>
     </main>
   );
