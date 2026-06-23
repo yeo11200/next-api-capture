@@ -7,7 +7,11 @@ export default defineConfig({
     inject: "src/next/inject.tsx",
   },
   format: ["esm", "cjs"],
-  dts: true,
+  // Bundle the shared types INTO the .d.ts too (rollup-plugin-dts treats workspace
+  // packages as external by default, which would leak `import ... from
+  // "@shinjinseop/shared"` into the declarations — broken for consumers since shared
+  // isn't published). `resolve` inlines only shared; next/react/ws types stay external.
+  dts: { resolve: [/@shinjinseop\/shared/] },
   clean: true,
   sourcemap: true,
   // Use the automatic JSX runtime (react/jsx-runtime), kept external.

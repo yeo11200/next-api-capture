@@ -20,7 +20,7 @@ importers:
 
   apps/playground:
     dependencies:
-      '@shinjinseop/library':
+      '@shinjinseop/next-api-capture':
         specifier: workspace:*
         version: link:../../packages/library
       next:

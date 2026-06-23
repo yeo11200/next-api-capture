@@ -1,4 +1,4 @@
-import { createCaptureMiddleware } from "@shinjinseop/library/middleware";
+import { createCaptureMiddleware } from "@shinjinseop/next-api-capture/middleware";
 
 // Stamps every request (document + RSC navigation + route handlers) with a
 // navigation id so server fetches and client fetches can be correlated.

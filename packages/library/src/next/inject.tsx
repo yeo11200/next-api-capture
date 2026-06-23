@@ -15,7 +15,7 @@ import { getCalls } from "../store";
  * they surface on the next navigation. Place at the END of the root layout <body>.
  *
  * Usage (root layout, a Server Component):
- *   import { CaptureInjectScript } from "@shinjinseop/library/inject";
+ *   import { CaptureInjectScript } from "@shinjinseop/next-api-capture/inject";
  *   …<body>{children}<CaptureInjectScript /></body>
  */
 export async function CaptureInjectScript() {

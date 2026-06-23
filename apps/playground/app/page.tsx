@@ -52,7 +52,7 @@ export default function Home() {
           n={1}
           title="Instrument the server"
           file="instrumentation.ts"
-          code={`import { registerCapture } from "@shinjinseop/library";
+          code={`import { registerCapture } from "@shinjinseop/next-api-capture";
 
 export async function register() {
   // dev by default; never auto-on in production
@@ -63,7 +63,7 @@ export async function register() {
           n={2}
           title="Add the middleware"
           file="middleware.ts"
-          code={`import { createCaptureMiddleware } from "@shinjinseop/library/middleware";
+          code={`import { createCaptureMiddleware } from "@shinjinseop/next-api-capture/middleware";
 
 export const middleware = createCaptureMiddleware();`}
         />

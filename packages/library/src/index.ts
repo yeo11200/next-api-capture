@@ -17,5 +17,5 @@ export {
 } from "@shinjinseop/shared";
 
 // NOTE: `createCaptureMiddleware` is intentionally NOT re-exported here.
-// Import it from "@shinjinseop/library/middleware" so `next/server`
+// Import it from "@shinjinseop/next-api-capture/middleware" so `next/server`
 // (an Edge module) never gets pulled into the Node instrumentation bundle.

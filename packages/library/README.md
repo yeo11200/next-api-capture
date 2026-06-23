@@ -1,4 +1,4 @@
-# @shinjinseop/library
+# @shinjinseop/next-api-capture
 
 Capture **server-side (SSR/RSC, route handlers, server actions)** and **client-side**
 API calls of a Next.js **App Router** app — per page render / navigation — and inspect
@@ -15,7 +15,7 @@ and streams the captures to the companion DevTools extension over a loopback dev
 ## Install
 
 ```bash
-pnpm add @shinjinseop/library
+pnpm add @shinjinseop/next-api-capture
 # peer: next >= 13.4 (react optional)
 ```
 
@@ -23,7 +23,7 @@ pnpm add @shinjinseop/library
 
 ```ts
 // 1) instrumentation.ts
-import { registerCapture } from "@shinjinseop/library";
+import { registerCapture } from "@shinjinseop/next-api-capture";
 export async function register() {
   // dev by default; never auto-on in production
   await registerCapture();
@@ -32,7 +32,7 @@ export async function register() {
 
 ```ts
 // 2) middleware.ts
-import { createCaptureMiddleware } from "@shinjinseop/library/middleware";
+import { createCaptureMiddleware } from "@shinjinseop/next-api-capture/middleware";
 export const middleware = createCaptureMiddleware();
 export const config = { matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"] };
 ```
@@ -50,8 +50,8 @@ If your app already has a middleware, wrap it with `composeCaptureMiddleware(you
 
 ## Other entry points
 
-- `@shinjinseop/library/middleware` — `createCaptureMiddleware` / `composeCaptureMiddleware`
-- `@shinjinseop/library/inject` — `<CaptureInjectScript />`, the SSR HTML-inject fallback transport
+- `@shinjinseop/next-api-capture/middleware` — `createCaptureMiddleware` / `composeCaptureMiddleware`
+- `@shinjinseop/next-api-capture/inject` — `<CaptureInjectScript />`, the SSR HTML-inject fallback transport
 - `createCaptureRouteHandler` (from the root export) — the production debug route (token-gated)
 
 ## Configuration (defaults)
