@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 const REPO = "https://github.com/yeo11200/next-api-capture";
 
 // Promo / landing page for the library. The other routes are live demo scenarios —
@@ -41,6 +43,48 @@ export default function Home() {
           body="Never auto-on in production. Sensitive headers masked, bodies size-capped and pattern-redacted." />
         <Feature accent="#c586c0" title="Drop-in, fail-safe"
           body="Three touch-points: instrumentation, middleware, the extension. Feature-detects and degrades — warns, never throws." />
+      </div>
+
+      {/* Get started — how to wire it into your own app */}
+      <h2 style={h2}>Get started</h2>
+      <div style={steps}>
+        <Step
+          n={1}
+          title="Instrument the server"
+          file="instrumentation.ts"
+          code={`import { registerCapture } from "@shinjinseop/library";
+
+export async function register() {
+  // dev by default; never auto-on in production
+  await registerCapture();
+}`}
+        />
+        <Step
+          n={2}
+          title="Add the middleware"
+          file="middleware.ts"
+          code={`import { createCaptureMiddleware } from "@shinjinseop/library/middleware";
+
+export const middleware = createCaptureMiddleware();`}
+        />
+        <Step
+          n={3}
+          title="Keep the ws package server-only"
+          file="next.config.js"
+          code={`module.exports = { serverExternalPackages: ["ws"] };`}
+        />
+        <Step
+          n={4}
+          title="Load the extension"
+          desc={
+            <>
+              In <code>chrome://extensions</code> enable Developer mode →{" "}
+              <strong>Load unpacked</strong> → <code>packages/extension/</code>. Open
+              DevTools and pick the <strong>“API Capture”</strong> panel — then browse
+              your app.
+            </>
+          }
+        />
       </div>
 
       {/* Scenario index — what the other routes are */}
@@ -97,6 +141,22 @@ function Row({ badge, color, url, ms, note }: { badge: string; color: string; ur
   );
 }
 
+function Step({ n, title, file, code, desc }: { n: number; title: string; file?: string; code?: string; desc?: ReactNode }) {
+  return (
+    <div style={step}>
+      <div style={stepNum}>{n}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={stepTitle}>
+          {title}
+          {file && <span style={stepFile}>{file}</span>}
+        </div>
+        {code && <pre style={codeBlock}>{code}</pre>}
+        {desc && <p style={stepDesc}>{desc}</p>}
+      </div>
+    </div>
+  );
+}
+
 /* ── styles (self-contained, no external deps) ── */
 const mono = "ui-monospace, SFMono-Regular, Menlo, monospace";
 
@@ -145,6 +205,21 @@ const cardTitle = { margin: "0 0 6px", fontSize: 15 } as const;
 const cardBody = { margin: 0, fontSize: 13.5, color: "#555", lineHeight: 1.55 } as const;
 
 const h2 = { margin: "36px 0 12px", fontSize: 22 } as const;
+const steps = { display: "flex", flexDirection: "column", gap: 16 } as const;
+const step = { display: "flex", gap: 14, alignItems: "flex-start" } as const;
+const stepNum = {
+  flex: "0 0 auto", width: 26, height: 26, borderRadius: "50%",
+  background: "#4ec9b0", color: "#06231d", fontWeight: 700, fontSize: 14,
+  display: "flex", alignItems: "center", justifyContent: "center",
+} as const;
+const stepTitle = { fontSize: 15, fontWeight: 600, display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: 8 } as const;
+const stepFile = { fontFamily: mono, fontSize: 12, fontWeight: 400, color: "#888" } as const;
+const stepDesc = { margin: "6px 0 0", fontSize: 13.5, color: "#555", lineHeight: 1.55 } as const;
+const codeBlock = {
+  margin: "8px 0 0", padding: 12, background: "#1e1e1e", color: "#d4d4d4",
+  border: "1px solid #2d2d2d", borderRadius: 8, fontFamily: mono, fontSize: 12.5,
+  lineHeight: 1.5, whiteSpace: "pre", overflowX: "auto",
+} as const;
 const list = { listStyle: "none", padding: 0, margin: 0 } as const;
 const li = { padding: "12px 0", borderTop: "1px solid #ececef" } as const;
 const liDesc = { margin: "4px 0 0", fontSize: 13.5, color: "#555" } as const;
